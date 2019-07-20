@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>library</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+    <style>
+        #input {
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <div id="input">
+            書名：<input type="text" v-model="input.bookName">
+            出版社：<input type="text" v-model="input.bookPublisher">
+            ISBN：<input type="text" v-model="input.bookIsbn">
+            <input type="button" value="新增" @click="submitHandler" v-if="show" class="btn btn-secondary">
+            <input type="button" value="更新" @click="submitUpdateHandler(updateData)" v-else="show"
+                class="btn btn-secondary"><br>
+        </div>
+        <table class="table table-dark table-striped table-hover">
+            <thead>
+                <tr>
+                    <td>#</td>
+                    <td>書名</td>
+                    <td>出版社</td>
+                    <td>ISBN</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(book,i) in books" :key="i">
+                    <td>{{ i+1 }}</td>
+                    <td>{{ book.name }}</td>
+                    <td>{{ book.publisher }}</td>
+                    <td>{{ book.isbn }}</td>
+                    <td><input type="button" value="更新" @click="updateHandler(i)" class="btn btn-secondary">
+                        <input type="button" value="刪除" @click="deleteHandler(i)" class="btn btn-secondary">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            updateData: '',
+            show: true,
+            books: [],
+            input: {
+                bookName: '',
+                bookPublisher: '',
+                bookIsbn: ''
+            }
+        },
+        methods: {
+            cancelInputdata() {
+                this.input.bookName = ''
+                this.input.bookPublisher = ''
+                this.input.bookIsbn = ''
+            },
+            submitHandler() {
+                axios.post('http://localhost:8888/books/', {
+                    name: this.input.bookName,
+                    publisher: this.input.bookPublisher,
+                    isbn: this.input.bookIsbn
+                })
+                    .then((res) => {
+                        this.books.push(res.data)
+                        this.cancelInputdata()
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    })
+            },
+            updateHandler(i) {
+                this.updateData = i
+                this.input.bookName = this.books[i].name
+                this.input.bookPublisher = this.books[i].publisher
+                this.input.bookIsbn = this.books[i].isbn
+                this.show = !this.show
+            },
+            submitUpdateHandler(updateData) {
+                let target = this.books[updateData].id
+                axios.patch(`http://localhost:8888/books/${target}`, {
+                    name: this.input.bookName,
+                    publisher: this.input.bookPublisher,
+                    isbn: this.input.bookIsbn
+                })
+                    .then((res) => {
+                        this.books[updateData].name = this.input.bookName
+                        this.books[updateData].publisher = this.input.bookPublisher
+                        this.books[updateData].isbn = this.input.bookIsbn
+                        console.log(res)
+                    })
+                    .then((res) => {
+                        this.show = !this.show
+                        this.cancelInputdata()
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    })
+            },
+            deleteHandler(i) {
+                let target = this.books[i].id
+                axios.delete(`http://localhost:8888/books/${target}`)
+                    .then(() => {
+                        this.books.splice(i, 1)
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    })
+            }
+        },
+        mounted() {
+            axios.get('http://localhost:8888/books/')
+                .then((res) => {
+                    console.log(res)
+                    this.books = res.data
+                    console.log(this.books)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+        }
+    })
+
+</script>
+
+</html>
