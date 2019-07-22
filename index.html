@@ -83,23 +83,22 @@
                 this.input.bookIsbn = ''
             },
             submitHandler() {
-                if(this.input.bookName == '' || this.input.bookPublisher == '' || this.input.bookIsbn == ''){
+                if (this.input.bookName == '' || this.input.bookPublisher == '' || this.input.bookIsbn == '') {
                     alert('請輸入完整資訊')
-                }else{
+                } else {
                     axios.post('http://localhost:8888/books/', {
-                    name: this.input.bookName,
-                    publisher: this.input.bookPublisher,
-                    isbn: this.input.bookIsbn
-                })
-                    .then((res) => {
-                        this.books.push(res.data)
-                        this.cancelInputdata()
+                        name: this.input.bookName,
+                        publisher: this.input.bookPublisher,
+                        isbn: this.input.bookIsbn
                     })
-                    .catch((err) => {
-                        console.log(err)
-                    })
+                        .then((res) => {
+                            this.books.push(res.data)
+                            this.cancelInputdata()
+                        })
+                        .catch((err) => {
+                            console.log(err)
+                        })
                 }
-                
             },
             updateHandler(i) {
                 this.updateData = i
@@ -109,17 +108,15 @@
                 this.show = !this.show
             },
             submitUpdateHandler(updateData) {
-                let target = this.books[updateData].id
-                axios.patch(`http://localhost:8888/books/${target}`, {
+                let target = this.books[updateData]
+                axios.patch(`http://localhost:8888/books/${target.id}`, {
                     name: this.input.bookName,
                     publisher: this.input.bookPublisher,
                     isbn: this.input.bookIsbn
                 })
                     .then((res) => {
-                        this.books[updateData].name = this.input.bookName
-                        this.books[updateData].publisher = this.input.bookPublisher
-                        this.books[updateData].isbn = this.input.bookIsbn
-                        console.log(res)
+                        this.books[updateData] = res.data
+                        console.log(res.data)
                     })
                     .then((res) => {
                         this.show = !this.show
@@ -130,14 +127,17 @@
                     })
             },
             deleteHandler(i) {
-                let target = this.books[i].id
-                axios.delete(`http://localhost:8888/books/${target}`)
-                    .then(() => {
-                        this.books.splice(i, 1)
-                    })
-                    .catch((err) => {
-                        console.log(err)
-                    })
+                let target = this.books[i]
+                let deleteData = confirm(`確定刪除"${target.name}"?`)
+                if (deleteData) {
+                    axios.delete(`http://localhost:8888/books/${target.id}`)
+                        .then(() => {
+                            this.books.splice(i, 1)
+                        })
+                        .catch((err) => {
+                            console.log(err)
+                        })
+                }
             }
         },
         mounted() {
@@ -152,7 +152,6 @@
                 })
         }
     })
-
 </script>
 
 </html>
