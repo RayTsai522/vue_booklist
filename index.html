@@ -19,10 +19,9 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
         integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
         crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
-        #input {
-            margin: 15px 0;
-        }
+
     </style>
 </head>
 
@@ -58,6 +57,12 @@
                 </tr>
             </tbody>
         </table>
+        <div id="submiterr" v-show="submiterr">
+            <div id="alert-submiterr" class="alert alert-dark">
+                <p>請輸入完整資料</p>
+                <button type="button" class="btn btn-secondary btn-sm" @click="submitError">確定</button>
+            </div>
+        </div>
     </div>
 
 </body>
@@ -74,7 +79,8 @@
                 bookName: '',
                 bookPublisher: '',
                 bookIsbn: ''
-            }
+            },
+            submiterr: false
         },
         methods: {
             cancelInputdata() {
@@ -84,7 +90,8 @@
             },
             submitHandler() {
                 if (this.input.bookName == '' || this.input.bookPublisher == '' || this.input.bookIsbn == '') {
-                    alert('請輸入完整資訊')
+                    // alert('請輸入完整資訊')
+                    this.submitError()
                 } else {
                     axios.post('http://localhost:8888/books/', {
                         name: this.input.bookName,
@@ -138,6 +145,9 @@
                             console.log(err)
                         })
                 }
+            },
+            submitError() {
+                this.submiterr = !this.submiterr
             }
         },
         mounted() {
